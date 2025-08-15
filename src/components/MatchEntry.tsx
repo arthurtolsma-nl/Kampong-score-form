@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Plus, X, Edit, Trash2, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Player {
@@ -22,8 +25,14 @@ interface Match {
   players: Player[];
 }
 
+interface SavedPlayer {
+  id: string;
+  name: string;
+}
+
 export const MatchEntry = () => {
   const [matches, setMatches] = useState<Match[]>([]);
+  const [savedPlayers, setSavedPlayers] = useState<SavedPlayer[]>([]);
   const [currentMatch, setCurrentMatch] = useState({
     opponent: '',
     date: '',
@@ -31,17 +40,58 @@ export const MatchEntry = () => {
   });
   const [players, setPlayers] = useState<Player[]>([]);
   const [newPlayerName, setNewPlayerName] = useState('');
+  const [selectedPlayer, setSelectedPlayer] = useState('');
+  const [editingMatch, setEditingMatch] = useState<Match | null>(null);
+  const [editingPlayerName, setEditingPlayerName] = useState('');
+  const [editingPlayerId, setEditingPlayerId] = useState('');
   const { toast } = useToast();
 
-  const addPlayer = () => {
-    if (newPlayerName.trim()) {
-      setPlayers([...players, {
-        name: newPlayerName.trim(),
-        goals: 0,
-        assists: 0,
-        isMotm: false
-      }]);
-      setNewPlayerName('');
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const savedMatches = localStorage.getItem('kampong-matches');
+    const savedPlayersList = localStorage.getItem('kampong-players');
+    
+    if (savedMatches) {
+      setMatches(JSON.parse(savedMatches));
+    }
+    if (savedPlayersList) {
+      setSavedPlayers(JSON.parse(savedPlayersList));
+    }
+  }, []);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    localStorage.setItem('kampong-matches', JSON.stringify(matches));
+  }, [matches]);
+
+  useEffect(() => {
+    localStorage.setItem('kampong-players', JSON.stringify(savedPlayers));
+  }, [savedPlayers]);
+
+  const addPlayerFromSelect = () => {
+    if (selectedPlayer) {
+      const playerName = selectedPlayer === 'new' ? newPlayerName.trim() : selectedPlayer;
+      if (playerName && !players.find(p => p.name === playerName)) {
+        const newPlayer = {
+          name: playerName,
+          goals: 0,
+          assists: 0,
+          isMotm: false
+        };
+        setPlayers([...players, newPlayer]);
+        
+        // Add to saved players if new
+        if (selectedPlayer === 'new' && !savedPlayers.find(p => p.name === playerName)) {
+          const newSavedPlayer = {
+            id: Date.now().toString(),
+            name: playerName
+          };
+          setSavedPlayers([...savedPlayers, newSavedPlayer]);
+        }
+        
+        setSelectedPlayer('');
+        setNewPlayerName('');
+      }
     }
   };
 
@@ -79,32 +129,141 @@ export const MatchEntry = () => {
       return;
     }
 
-    const newMatch: Match = {
-      id: Date.now().toString(),
-      ...currentMatch,
-      players: [...players]
-    };
+    if (editingMatch) {
+      // Update existing match
+      const updatedMatches = matches.map(m => 
+        m.id === editingMatch.id 
+          ? { ...editingMatch, ...currentMatch, players: [...players] }
+          : m
+      );
+      setMatches(updatedMatches);
+      setEditingMatch(null);
+      toast({
+        title: "Wedstrijd bijgewerkt!",
+        description: `${currentMatch.homeAway === 'thuis' ? 'Thuis' : 'Uit'} tegen ${currentMatch.opponent}`
+      });
+    } else {
+      // Create new match
+      const newMatch: Match = {
+        id: Date.now().toString(),
+        ...currentMatch,
+        players: [...players]
+      };
+      setMatches([newMatch, ...matches]);
+      toast({
+        title: "Wedstrijd opgeslagen!",
+        description: `${currentMatch.homeAway === 'thuis' ? 'Thuis' : 'Uit'} tegen ${currentMatch.opponent}`
+      });
+    }
 
-    setMatches([newMatch, ...matches]);
+    // Reset form
     setCurrentMatch({ opponent: '', date: '', homeAway: 'thuis' });
     setPlayers([]);
-    
+  };
+
+  const editMatch = (match: Match) => {
+    setEditingMatch(match);
+    setCurrentMatch({
+      opponent: match.opponent,
+      date: match.date,
+      homeAway: match.homeAway
+    });
+    setPlayers([...match.players]);
+  };
+
+  const deleteMatch = (matchId: string) => {
+    setMatches(matches.filter(m => m.id !== matchId));
     toast({
-      title: "Wedstrijd opgeslagen!",
-      description: `${currentMatch.homeAway === 'thuis' ? 'Thuis' : 'Uit'} tegen ${currentMatch.opponent}`
+      title: "Wedstrijd verwijderd",
+      description: "De wedstrijd is succesvol verwijderd"
     });
   };
+
+  const cancelEdit = () => {
+    setEditingMatch(null);
+    setCurrentMatch({ opponent: '', date: '', homeAway: 'thuis' });
+    setPlayers([]);
+  };
+
+  const updatePlayerName = () => {
+    if (editingPlayerName.trim() && editingPlayerId) {
+      const updatedSavedPlayers = savedPlayers.map(p => 
+        p.id === editingPlayerId 
+          ? { ...p, name: editingPlayerName.trim() }
+          : p
+      );
+      setSavedPlayers(updatedSavedPlayers);
+      
+      // Update matches with old player name
+      const oldPlayerName = savedPlayers.find(p => p.id === editingPlayerId)?.name;
+      if (oldPlayerName) {
+        const updatedMatches = matches.map(match => ({
+          ...match,
+          players: match.players.map(player => 
+            player.name === oldPlayerName 
+              ? { ...player, name: editingPlayerName.trim() }
+              : player
+          )
+        }));
+        setMatches(updatedMatches);
+      }
+      
+      setEditingPlayerName('');
+      setEditingPlayerId('');
+      toast({
+        title: "Speler bijgewerkt",
+        description: "De spelernaam is succesvol aangepast"
+      });
+    }
+  };
+
+  const deletePlayer = (playerId: string) => {
+    setSavedPlayers(savedPlayers.filter(p => p.id !== playerId));
+    toast({
+      title: "Speler verwijderd",
+      description: "De speler is verwijderd uit de lijst"
+    });
+  };
+
+  // Calculate total stats
+  const playerStats = savedPlayers.map(savedPlayer => {
+    const totalGoals = matches.reduce((sum, match) => {
+      const player = match.players.find(p => p.name === savedPlayer.name);
+      return sum + (player?.goals || 0);
+    }, 0);
+    
+    const totalAssists = matches.reduce((sum, match) => {
+      const player = match.players.find(p => p.name === savedPlayer.name);
+      return sum + (player?.assists || 0);
+    }, 0);
+    
+    const motmCount = matches.reduce((sum, match) => {
+      const player = match.players.find(p => p.name === savedPlayer.name);
+      return sum + (player?.isMotm ? 1 : 0);
+    }, 0);
+
+    return {
+      ...savedPlayer,
+      totalGoals,
+      totalAssists,
+      motmCount
+    };
+  }).filter(player => player.totalGoals > 0 || player.totalAssists > 0 || player.motmCount > 0);
 
   return (
     <div className="min-h-screen bg-background p-4 max-w-md mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-primary mb-2">Kampong Statistieken</h1>
-        <p className="text-muted-foreground">Voer wedstrijdgegevens in</p>
+        <p className="text-muted-foreground">
+          {editingMatch ? 'Wedstrijd bewerken' : 'Voer wedstrijdgegevens in'}
+        </p>
       </div>
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Nieuwe wedstrijd</CardTitle>
+          <CardTitle>
+            {editingMatch ? 'Wedstrijd bewerken' : 'Nieuwe wedstrijd'}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -143,23 +302,127 @@ export const MatchEntry = () => {
               Uit
             </Button>
           </div>
+
+          {editingMatch && (
+            <Button variant="outline" onClick={cancelEdit} className="w-full">
+              Annuleren
+            </Button>
+          )}
         </CardContent>
       </Card>
 
       <Card className="mb-6">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Spelers toevoegen</CardTitle>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Users className="h-4 w-4 mr-2" />
+                Beheer
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Spelers beheren</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                {savedPlayers.map((player) => (
+                  <div key={player.id} className="flex items-center justify-between p-2 border rounded">
+                    <span>{player.name}</span>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setEditingPlayerId(player.id);
+                          setEditingPlayerName(player.name);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Speler verwijderen?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Weet je zeker dat je {player.name} wilt verwijderen? Dit kan niet ongedaan gemaakt worden.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deletePlayer(player.id)}>
+                              Verwijderen
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                ))}
+                
+                {editingPlayerId && (
+                  <div className="flex gap-2 p-2 bg-accent rounded">
+                    <Input
+                      value={editingPlayerName}
+                      onChange={(e) => setEditingPlayerName(e.target.value)}
+                      placeholder="Nieuwe naam"
+                    />
+                    <Button onClick={updatePlayerName} size="sm">
+                      Opslaan
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setEditingPlayerId('');
+                        setEditingPlayerName('');
+                      }}
+                      size="sm"
+                    >
+                      Annuleren
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 mb-4">
-            <Input
-              value={newPlayerName}
-              onChange={(e) => setNewPlayerName(e.target.value)}
-              placeholder="Naam speler"
-              onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
-            />
-            <Button onClick={addPlayer} size="icon">
-              <Plus className="h-4 w-4" />
+          <div className="space-y-3 mb-4">
+            <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
+              <SelectTrigger>
+                <SelectValue placeholder="Kies een speler" />
+              </SelectTrigger>
+              <SelectContent>
+                {savedPlayers.map((player) => (
+                  <SelectItem key={player.id} value={player.name}>
+                    {player.name}
+                  </SelectItem>
+                ))}
+                <SelectItem value="new">+ Nieuwe speler</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {selectedPlayer === 'new' && (
+              <Input
+                value={newPlayerName}
+                onChange={(e) => setNewPlayerName(e.target.value)}
+                placeholder="Naam nieuwe speler"
+                onKeyPress={(e) => e.key === 'Enter' && addPlayerFromSelect()}
+              />
+            )}
+            
+            <Button 
+              onClick={addPlayerFromSelect} 
+              className="w-full"
+              disabled={!selectedPlayer || (selectedPlayer === 'new' && !newPlayerName.trim())}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Toevoegen
             </Button>
           </div>
 
@@ -219,8 +482,38 @@ export const MatchEntry = () => {
         className="w-full mb-6"
         disabled={!currentMatch.opponent || !currentMatch.date}
       >
-        Wedstrijd opslaan
+        {editingMatch ? 'Wijzigingen opslaan' : 'Wedstrijd opslaan'}
       </Button>
+
+      {playerStats.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Seizoen Overzicht</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {playerStats
+                .sort((a, b) => (b.totalGoals + b.totalAssists) - (a.totalGoals + a.totalAssists))
+                .map((player) => (
+                <div key={player.id} className="flex justify-between items-center py-1">
+                  <span className="font-medium">{player.name}</span>
+                  <div className="flex gap-2">
+                    {player.totalGoals > 0 && (
+                      <Badge variant="secondary">⚽ {player.totalGoals}</Badge>
+                    )}
+                    {player.totalAssists > 0 && (
+                      <Badge variant="outline">🅰️ {player.totalAssists}</Badge>
+                    )}
+                    {player.motmCount > 0 && (
+                      <Badge>⭐ {player.motmCount}</Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {matches.length > 0 && (
         <div>
@@ -229,12 +522,46 @@ export const MatchEntry = () => {
             {matches.map((match) => (
               <Card key={match.id}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">
-                    {match.homeAway === 'thuis' ? 'Thuis' : 'Uit'} vs {match.opponent}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(match.date).toLocaleDateString('nl-NL')}
-                  </p>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">
+                        {match.homeAway === 'thuis' ? 'Thuis' : 'Uit'} vs {match.opponent}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(match.date).toLocaleDateString('nl-NL')}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => editMatch(match)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Wedstrijd verwijderen?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Weet je zeker dat je deze wedstrijd tegen {match.opponent} wilt verwijderen?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMatch(match.id)}>
+                              Verwijderen
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {match.players.length > 0 ? (
