@@ -22,6 +22,7 @@ interface Match {
   opponent: string;
   date: string;
   homeAway: 'thuis' | 'uit';
+  score: string;
   players: Player[];
 }
 
@@ -36,7 +37,8 @@ export const MatchEntry = () => {
   const [currentMatch, setCurrentMatch] = useState({
     opponent: '',
     date: '',
-    homeAway: 'thuis' as 'thuis' | 'uit'
+    homeAway: 'thuis' as 'thuis' | 'uit',
+    score: ''
   });
   const [players, setPlayers] = useState<Player[]>([]);
   const [newPlayerName, setNewPlayerName] = useState('');
@@ -157,7 +159,7 @@ export const MatchEntry = () => {
     }
 
     // Reset form
-    setCurrentMatch({ opponent: '', date: '', homeAway: 'thuis' });
+    setCurrentMatch({ opponent: '', date: '', homeAway: 'thuis', score: '' });
     setPlayers([]);
   };
 
@@ -166,7 +168,8 @@ export const MatchEntry = () => {
     setCurrentMatch({
       opponent: match.opponent,
       date: match.date,
-      homeAway: match.homeAway
+      homeAway: match.homeAway,
+      score: match.score
     });
     setPlayers([...match.players]);
   };
@@ -181,7 +184,7 @@ export const MatchEntry = () => {
 
   const cancelEdit = () => {
     setEditingMatch(null);
-    setCurrentMatch({ opponent: '', date: '', homeAway: 'thuis' });
+    setCurrentMatch({ opponent: '', date: '', homeAway: 'thuis', score: '' });
     setPlayers([]);
   };
 
@@ -253,7 +256,7 @@ export const MatchEntry = () => {
   return (
     <div className="min-h-screen bg-background p-4 max-w-md mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-primary mb-2">Kampong Statistieken</h1>
+        <h1 className="text-2xl font-bold text-primary mb-2">Kampong 12 statistieken</h1>
         <p className="text-muted-foreground">
           {editingMatch ? 'Wedstrijd bewerken' : 'Voer wedstrijdgegevens in'}
         </p>
@@ -283,6 +286,16 @@ export const MatchEntry = () => {
               type="date"
               value={currentMatch.date}
               onChange={(e) => setCurrentMatch({ ...currentMatch, date: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="score">Uitslag</Label>
+            <Input
+              id="score"
+              value={currentMatch.score}
+              onChange={(e) => setCurrentMatch({ ...currentMatch, score: e.target.value })}
+              placeholder="2-1"
             />
           </div>
 
@@ -493,7 +506,7 @@ export const MatchEntry = () => {
           <CardContent>
             <div className="space-y-2">
               {playerStats
-                .sort((a, b) => (b.totalGoals + b.totalAssists) - (a.totalGoals + a.totalAssists))
+                .sort((a, b) => (b.totalGoals + b.totalAssists + b.motmCount) - (a.totalGoals + a.totalAssists + a.motmCount))
                 .map((player) => (
                 <div key={player.id} className="flex justify-between items-center py-1">
                   <span className="font-medium">{player.name}</span>
@@ -526,6 +539,7 @@ export const MatchEntry = () => {
                     <div>
                       <CardTitle className="text-lg">
                         {match.homeAway === 'thuis' ? 'Thuis' : 'Uit'} vs {match.opponent}
+                        {match.score && ` (${match.score})`}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
                         {new Date(match.date).toLocaleDateString('nl-NL')}
