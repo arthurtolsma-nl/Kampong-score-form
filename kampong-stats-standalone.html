@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kampong 12 Statistieken</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: 220 38% 35%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 220.9 39.3% 11%;
+            --accent: 210 40% 94%;
+            --accent-foreground: 220.9 39.3% 11%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --background: 0 0% 100%;
+            --foreground: 220.9 39.3% 11%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 220.9 39.3% 11%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 220.9 39.3% 11%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.5;
+        }
+
+        .container {
+            min-height: 100vh;
+            padding: 1rem;
+            max-width: 28rem;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: hsl(var(--primary));
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: hsl(var(--muted-foreground));
+        }
+
+        .card {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            padding: 1.5rem 1.5rem 0;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.375rem;
+            background: hsl(var(--background));
+            font-size: 0.875rem;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-primary {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+
+        .button-primary:hover:not(:disabled) {
+            background: hsl(var(--primary) / 0.9);
+        }
+
+        .button-outline {
+            background: transparent;
+            color: hsl(var(--primary));
+            border: 1px solid hsl(var(--border));
+        }
+
+        .button-outline:hover {
+            background: hsl(var(--accent));
+        }
+
+        .button-ghost {
+            background: transparent;
+            color: hsl(var(--foreground));
+        }
+
+        .button-ghost:hover {
+            background: hsl(var(--accent));
+        }
+
+        .button-destructive {
+            background: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+        }
+
+        .button-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .button-full {
+            width: 100%;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        .space-y-2 > * + * {
+            margin-top: 0.5rem;
+        }
+
+        .space-y-3 > * + * {
+            margin-top: 0.75rem;
+        }
+
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+
+        .grid-cols-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.125rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-default {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+
+        .badge-secondary {
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+        }
+
+        .badge-outline {
+            background: transparent;
+            color: hsl(var(--foreground));
+            border: 1px solid hsl(var(--border));
+        }
+
+        .select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.375rem;
+            background: hsl(var(--background));
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .player-card {
+            padding: 0.75rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .player-name {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-input {
+            height: 2rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: hsl(var(--background));
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .home-away-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .home-away-buttons .button {
+            flex: 1;
+        }
+
+        .text-destructive {
+            color: hsl(var(--destructive));
+        }
+
+        .text-small {
+            font-size: 0.875rem;
+        }
+
+        .text-muted {
+            color: hsl(var(--muted-foreground));
+        }
+
+        .font-medium {
+            font-weight: 500;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .p-2 {
+            padding: 0.5rem;
+        }
+
+        .rounded {
+            border-radius: 0.375rem;
+        }
+
+        .border {
+            border: 1px solid hsl(var(--border));
+        }
+
+        .bg-accent {
+            background: hsl(var(--accent));
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Kampong 12 statistieken</h1>
+            <p class="subtitle" id="subtitle">Voer wedstrijdgegevens in</p>
+        </div>
+
+        <!-- Match Form -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title" id="form-title">Nieuwe wedstrijd</h2>
+            </div>
+            <div class="card-content">
+                <div class="space-y-4">
+                    <div class="input-group">
+                        <label class="label" for="opponent">Tegenstander</label>
+                        <input class="input" id="opponent" type="text" placeholder="Naam tegenstander">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="label" for="date">Datum</label>
+                        <input class="input" id="date" type="date">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="label" for="score">Uitslag</label>
+                        <input class="input" id="score" type="text" placeholder="2-1">
+                    </div>
+
+                    <div class="home-away-buttons">
+                        <button class="button button-primary" id="home-btn">Thuis</button>
+                        <button class="button button-outline" id="away-btn">Uit</button>
+                    </div>
+
+                    <button class="button button-outline button-full hidden" id="cancel-edit">
+                        Annuleren
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Players Section -->
+        <div class="card">
+            <div class="card-header flex justify-between items-center">
+                <h2 class="card-title">Spelers toevoegen</h2>
+                <button class="button button-outline button-small" id="manage-players">
+                    👥 Beheer
+                </button>
+            </div>
+            <div class="card-content">
+                <div class="space-y-3 mb-4">
+                    <select class="select" id="player-select">
+                        <option value="">Kies een speler</option>
+                    </select>
+                    
+                    <input class="input hidden" id="new-player-name" type="text" placeholder="Naam nieuwe speler">
+                    
+                    <button class="button button-primary button-full" id="add-player" disabled>
+                        ➕ Toevoegen
+                    </button>
+                </div>
+
+                <div id="players-list" class="space-y-3">
+                    <!-- Dynamic player cards will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <button class="button button-primary button-full mb-4" id="save-match" disabled>
+            Wedstrijd opslaan
+        </button>
+
+        <!-- Season Overview -->
+        <div class="card hidden" id="season-overview">
+            <div class="card-header">
+                <h2 class="card-title">Seizoen Overzicht</h2>
+            </div>
+            <div class="card-content">
+                <div id="player-stats" class="space-y-2">
+                    <!-- Dynamic stats will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Matches -->
+        <div id="matches-section" class="hidden">
+            <h2 class="title mb-4">Recente wedstrijden</h2>
+            <div id="matches-list" class="space-y-4">
+                <!-- Dynamic match cards will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Management Modal -->
+    <div id="player-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 class="modal-title">Spelers beheren</h3>
+            <div id="saved-players-list" class="space-y-3">
+                <!-- Dynamic saved players list -->
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="button button-outline" id="close-modal">Sluiten</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 class="modal-title" id="confirm-title">Bevestigen</h3>
+            <p id="confirm-message" class="mb-4"></p>
+            <div class="flex gap-2">
+                <button class="button button-outline" id="confirm-cancel">Annuleren</button>
+                <button class="button button-destructive" id="confirm-action">Verwijderen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let matches = [];
+        let savedPlayers = [];
+        let currentMatch = {
+            opponent: '',
+            date: '',
+            homeAway: 'thuis',
+            score: ''
+        };
+        let players = [];
+        let editingMatch = null;
+        let editingPlayer = null;
+        let confirmCallback = null;
+
+        // Load data from localStorage
+        function loadData() {
+            const savedMatches = localStorage.getItem('kampong-matches');
+            const savedPlayersList = localStorage.getItem('kampong-players');
+            
+            if (savedMatches) {
+                matches = JSON.parse(savedMatches);
+            }
+            if (savedPlayersList) {
+                savedPlayers = JSON.parse(savedPlayersList);
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('kampong-matches', JSON.stringify(matches));
+            localStorage.setItem('kampong-players', JSON.stringify(savedPlayers));
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            // Simple alert for now - could be enhanced with a proper toast
+            alert(message);
+        }
+
+        // Update player select dropdown
+        function updatePlayerSelect() {
+            const select = document.getElementById('player-select');
+            select.innerHTML = '<option value="">Kies een speler</option>';
+            
+            savedPlayers.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.name;
+                option.textContent = player.name;
+                select.appendChild(option);
+            });
+            
+            const newOption = document.createElement('option');
+            newOption.value = 'new';
+            newOption.textContent = '+ Nieuwe speler';
+            select.appendChild(newOption);
+        }
+
+        // Add player from select
+        function addPlayerFromSelect() {
+            const select = document.getElementById('player-select');
+            const newPlayerInput = document.getElementById('new-player-name');
+            
+            const selectedValue = select.value;
+            let playerName = '';
+            
+            if (selectedValue === 'new') {
+                playerName = newPlayerInput.value.trim();
+            } else {
+                playerName = selectedValue;
+            }
+            
+            if (playerName && !players.find(p => p.name === playerName)) {
+                const newPlayer = {
+                    name: playerName,
+                    goals: 0,
+                    assists: 0,
+                    isMotm: false
+                };
+                players.push(newPlayer);
+                
+                // Add to saved players if new
+                if (selectedValue === 'new' && !savedPlayers.find(p => p.name === playerName)) {
+                    const newSavedPlayer = {
+                        id: Date.now().toString(),
+                        name: playerName
+                    };
+                    savedPlayers.push(newSavedPlayer);
+                    updatePlayerSelect();
+                    saveData();
+                }
+                
+                select.value = '';
+                newPlayerInput.value = '';
+                newPlayerInput.classList.add('hidden');
+                updatePlayersDisplay();
+                updateAddPlayerButton();
+            }
+        }
+
+        // Update players display
+        function updatePlayersDisplay() {
+            const container = document.getElementById('players-list');
+            container.innerHTML = '';
+            
+            players.forEach((player, index) => {
+                const playerCard = document.createElement('div');
+                playerCard.className = 'player-card';
+                playerCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="player-name">${player.name}</span>
+                        <button class="button button-ghost button-small" onclick="removePlayer(${index})">
+                            ❌
+                        </button>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div>
+                            <label class="label text-small">Goals</label>
+                            <input class="input stat-input" type="number" min="0" value="${player.goals}" 
+                                   onchange="updatePlayerGoals(${index}, this.value)">
+                        </div>
+                        <div>
+                            <label class="label text-small">Assists</label>
+                            <input class="input stat-input" type="number" min="0" value="${player.assists}" 
+                                   onchange="updatePlayerAssists(${index}, this.value)">
+                        </div>
+                    </div>
+                    
+                    <button class="button ${player.isMotm ? 'button-primary' : 'button-outline'} button-full button-small" 
+                            onclick="toggleMotm(${index})">
+                        ${player.isMotm ? '⭐ Man of the Match' : 'Maak Man of the Match'}
+                    </button>
+                `;
+                container.appendChild(playerCard);
+            });
+        }
+
+        // Player management functions
+        function updatePlayerGoals(index, goals) {
+            players[index].goals = Math.max(0, parseInt(goals) || 0);
+        }
+
+        function updatePlayerAssists(index, assists) {
+            players[index].assists = Math.max(0, parseInt(assists) || 0);
+        }
+
+        function toggleMotm(index) {
+            players = players.map((player, i) => ({
+                ...player,
+                isMotm: i === index ? !player.isMotm : false
+            }));
+            updatePlayersDisplay();
+        }
+
+        function removePlayer(index) {
+            players.splice(index, 1);
+            updatePlayersDisplay();
+        }
+
+        // Update add player button state
+        function updateAddPlayerButton() {
+            const button = document.getElementById('add-player');
+            const select = document.getElementById('player-select');
+            const newPlayerInput = document.getElementById('new-player-name');
+            
+            const selectedValue = select.value;
+            const canAdd = selectedValue && (selectedValue !== 'new' || newPlayerInput.value.trim());
+            
+            button.disabled = !canAdd;
+        }
+
+        // Save match
+        function saveMatch() {
+            const opponent = document.getElementById('opponent').value.trim();
+            const date = document.getElementById('date').value;
+            
+            if (!opponent || !date) {
+                showToast('Vul alle velden in. Tegenstander en datum zijn verplicht.');
+                return;
+            }
+
+            if (editingMatch) {
+                // Update existing match
+                const matchIndex = matches.findIndex(m => m.id === editingMatch.id);
+                if (matchIndex !== -1) {
+                    matches[matchIndex] = {
+                        ...editingMatch,
+                        ...currentMatch,
+                        players: [...players]
+                    };
+                }
+                editingMatch = null;
+                showToast(`Wedstrijd bijgewerkt! ${currentMatch.homeAway === 'thuis' ? 'Thuis' : 'Uit'} tegen ${currentMatch.opponent}`);
+            } else {
+                // Create new match
+                const newMatch = {
+                    id: Date.now().toString(),
+                    ...currentMatch,
+                    players: [...players]
+                };
+                matches.unshift(newMatch);
+                showToast(`Wedstrijd opgeslagen! ${currentMatch.homeAway === 'thuis' ? 'Thuis' : 'Uit'} tegen ${currentMatch.opponent}`);
+            }
+
+            // Reset form
+            resetForm();
+            saveData();
+            updateDisplay();
+        }
+
+        // Reset form
+        function resetForm() {
+            currentMatch = { opponent: '', date: '', homeAway: 'thuis', score: '' };
+            players = [];
+            editingMatch = null;
+            
+            document.getElementById('opponent').value = '';
+            document.getElementById('date').value = '';
+            document.getElementById('score').value = '';
+            document.getElementById('home-btn').className = 'button button-primary';
+            document.getElementById('away-btn').className = 'button button-outline';
+            document.getElementById('form-title').textContent = 'Nieuwe wedstrijd';
+            document.getElementById('subtitle').textContent = 'Voer wedstrijdgegevens in';
+            document.getElementById('cancel-edit').classList.add('hidden');
+            document.getElementById('save-match').textContent = 'Wedstrijd opslaan';
+            
+            updatePlayersDisplay();
+            updateSaveButton();
+        }
+
+        // Edit match
+        function editMatch(matchId) {
+            const match = matches.find(m => m.id === matchId);
+            if (match) {
+                editingMatch = match;
+                currentMatch = {
+                    opponent: match.opponent,
+                    date: match.date,
+                    homeAway: match.homeAway,
+                    score: match.score
+                };
+                players = [...match.players];
+                
+                document.getElementById('opponent').value = match.opponent;
+                document.getElementById('date').value = match.date;
+                document.getElementById('score').value = match.score;
+                
+                if (match.homeAway === 'thuis') {
+                    document.getElementById('home-btn').className = 'button button-primary';
+                    document.getElementById('away-btn').className = 'button button-outline';
+                } else {
+                    document.getElementById('home-btn').className = 'button button-outline';
+                    document.getElementById('away-btn').className = 'button button-primary';
+                }
+                
+                document.getElementById('form-title').textContent = 'Wedstrijd bewerken';
+                document.getElementById('subtitle').textContent = 'Wedstrijd bewerken';
+                document.getElementById('cancel-edit').classList.remove('hidden');
+                document.getElementById('save-match').textContent = 'Wijzigingen opslaan';
+                
+                updatePlayersDisplay();
+                updateSaveButton();
+            }
+        }
+
+        // Delete match
+        function deleteMatch(matchId) {
+            const match = matches.find(m => m.id === matchId);
+            if (match) {
+                showConfirmDialog(
+                    'Wedstrijd verwijderen?',
+                    `Weet je zeker dat je deze wedstrijd tegen ${match.opponent} wilt verwijderen?`,
+                    () => {
+                        matches = matches.filter(m => m.id !== matchId);
+                        saveData();
+                        updateDisplay();
+                        showToast('Wedstrijd verwijderd. De wedstrijd is succesvol verwijderd.');
+                    }
+                );
+            }
+        }
+
+        // Update save button state
+        function updateSaveButton() {
+            const button = document.getElementById('save-match');
+            const opponent = document.getElementById('opponent').value.trim();
+            const date = document.getElementById('date').value;
+            
+            button.disabled = !opponent || !date;
+        }
+
+        // Update season overview
+        function updateSeasonOverview() {
+            const playerStats = savedPlayers.map(savedPlayer => {
+                const totalGoals = matches.reduce((sum, match) => {
+                    const player = match.players.find(p => p.name === savedPlayer.name);
+                    return sum + (player?.goals || 0);
+                }, 0);
+                
+                const totalAssists = matches.reduce((sum, match) => {
+                    const player = match.players.find(p => p.name === savedPlayer.name);
+                    return sum + (player?.assists || 0);
+                }, 0);
+                
+                const motmCount = matches.reduce((sum, match) => {
+                    const player = match.players.find(p => p.name === savedPlayer.name);
+                    return sum + (player?.isMotm ? 1 : 0);
+                }, 0);
+
+                return {
+                    ...savedPlayer,
+                    totalGoals,
+                    totalAssists,
+                    motmCount
+                };
+            }).filter(player => player.totalGoals > 0 || player.totalAssists > 0 || player.motmCount > 0);
+
+            if (playerStats.length > 0) {
+                document.getElementById('season-overview').classList.remove('hidden');
+                
+                const container = document.getElementById('player-stats');
+                container.innerHTML = '';
+                
+                playerStats
+                    .sort((a, b) => (b.totalGoals + b.totalAssists + b.motmCount) - (a.totalGoals + a.totalAssists + a.motmCount))
+                    .forEach(player => {
+                        const playerDiv = document.createElement('div');
+                        playerDiv.className = 'flex justify-between items-center';
+                        
+                        let badges = '';
+                        if (player.totalGoals > 0) {
+                            badges += `<span class="badge badge-secondary">⚽ ${player.totalGoals}</span> `;
+                        }
+                        if (player.totalAssists > 0) {
+                            badges += `<span class="badge badge-outline">🅰️ ${player.totalAssists}</span> `;
+                        }
+                        if (player.motmCount > 0) {
+                            badges += `<span class="badge badge-default">⭐ ${player.motmCount}</span>`;
+                        }
+                        
+                        playerDiv.innerHTML = `
+                            <span class="font-medium">${player.name}</span>
+                            <div class="flex gap-2">${badges}</div>
+                        `;
+                        container.appendChild(playerDiv);
+                    });
+            } else {
+                document.getElementById('season-overview').classList.add('hidden');
+            }
+        }
+
+        // Update matches display
+        function updateMatchesDisplay() {
+            if (matches.length > 0) {
+                document.getElementById('matches-section').classList.remove('hidden');
+                
+                const container = document.getElementById('matches-list');
+                container.innerHTML = '';
+                
+                matches.forEach(match => {
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'card';
+                    
+                    let playersHtml = '';
+                    if (match.players.length > 0) {
+                        playersHtml = match.players.map(player => {
+                            let badges = '';
+                            if (player.goals > 0) {
+                                badges += `<span class="badge badge-secondary">⚽ ${player.goals}</span> `;
+                            }
+                            if (player.assists > 0) {
+                                badges += `<span class="badge badge-outline">🅰️ ${player.assists}</span> `;
+                            }
+                            if (player.isMotm) {
+                                badges += `<span class="badge badge-default">⭐ MOTM</span>`;
+                            }
+                            
+                            return `
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium">${player.name}</span>
+                                    <div class="flex gap-2">${badges}</div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        playersHtml = '<p class="text-muted text-small">Geen spelergegevens</p>';
+                    }
+                    
+                    matchCard.innerHTML = `
+                        <div class="card-header">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="card-title">
+                                        ${match.homeAway === 'thuis' ? 'Thuis' : 'Uit'} vs ${match.opponent}
+                                        ${match.score ? ` (${match.score})` : ''}
+                                    </h3>
+                                    <p class="text-small text-muted">
+                                        ${new Date(match.date).toLocaleDateString('nl-NL')}
+                                    </p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="button button-ghost button-small" onclick="editMatch('${match.id}')">
+                                        ✏️
+                                    </button>
+                                    <button class="button button-ghost button-small" onclick="deleteMatch('${match.id}')">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="space-y-2">
+                                ${playersHtml}
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(matchCard);
+                });
+            } else {
+                document.getElementById('matches-section').classList.add('hidden');
+            }
+        }
+
+        // Update saved players modal
+        function updateSavedPlayersModal() {
+            const container = document.getElementById('saved-players-list');
+            container.innerHTML = '';
+            
+            savedPlayers.forEach(player => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'flex items-center justify-between p-2 border rounded';
+                
+                if (editingPlayer && editingPlayer.id === player.id) {
+                    playerDiv.innerHTML = `
+                        <input class="input" type="text" value="${player.name}" id="edit-player-name">
+                        <div class="flex gap-1">
+                            <button class="button button-primary button-small" onclick="savePlayerName('${player.id}')">
+                                Opslaan
+                            </button>
+                            <button class="button button-outline button-small" onclick="cancelEditPlayer()">
+                                Annuleren
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    playerDiv.innerHTML = `
+                        <span>${player.name}</span>
+                        <div class="flex gap-1">
+                            <button class="button button-ghost button-small" onclick="editPlayer('${player.id}', '${player.name}')">
+                                ✏️
+                            </button>
+                            <button class="button button-ghost button-small" onclick="deletePlayer('${player.id}', '${player.name}')">
+                                🗑️
+                            </button>
+                        </div>
+                    `;
+                }
+                container.appendChild(playerDiv);
+            });
+        }
+
+        // Player management functions
+        function editPlayer(id, name) {
+            editingPlayer = { id, name };
+            updateSavedPlayersModal();
+        }
+
+        function cancelEditPlayer() {
+            editingPlayer = null;
+            updateSavedPlayersModal();
+        }
+
+        function savePlayerName(id) {
+            const newName = document.getElementById('edit-player-name').value.trim();
+            if (newName) {
+                const oldPlayerName = savedPlayers.find(p => p.id === id)?.name;
+                
+                // Update saved player
+                savedPlayers = savedPlayers.map(p => 
+                    p.id === id ? { ...p, name: newName } : p
+                );
+                
+                // Update matches with old player name
+                if (oldPlayerName) {
+                    matches = matches.map(match => ({
+                        ...match,
+                        players: match.players.map(player => 
+                            player.name === oldPlayerName 
+                                ? { ...player, name: newName }
+                                : player
+                        )
+                    }));
+                }
+                
+                editingPlayer = null;
+                saveData();
+                updatePlayerSelect();
+                updateSavedPlayersModal();
+                updateDisplay();
+                showToast('Speler bijgewerkt. De spelernaam is succesvol aangepast.');
+            }
+        }
+
+        function deletePlayer(id, name) {
+            showConfirmDialog(
+                'Speler verwijderen?',
+                `Weet je zeker dat je ${name} wilt verwijderen? Dit kan niet ongedaan gemaakt worden.`,
+                () => {
+                    savedPlayers = savedPlayers.filter(p => p.id !== id);
+                    saveData();
+                    updatePlayerSelect();
+                    updateSavedPlayersModal();
+                    updateDisplay();
+                    showToast('Speler verwijderd. De speler is verwijderd uit de lijst.');
+                }
+            );
+        }
+
+        // Modal functions
+        function showConfirmDialog(title, message, callback) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            confirmCallback = callback;
+        }
+
+        function hideConfirmDialog() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            confirmCallback = null;
+        }
+
+        // Update all displays
+        function updateDisplay() {
+            updateSeasonOverview();
+            updateMatchesDisplay();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            updatePlayerSelect();
+            updateDisplay();
+
+            // Form inputs
+            document.getElementById('opponent').addEventListener('input', function(e) {
+                currentMatch.opponent = e.target.value;
+                updateSaveButton();
+            });
+
+            document.getElementById('date').addEventListener('input', function(e) {
+                currentMatch.date = e.target.value;
+                updateSaveButton();
+            });
+
+            document.getElementById('score').addEventListener('input', function(e) {
+                currentMatch.score = e.target.value;
+            });
+
+            // Home/Away buttons
+            document.getElementById('home-btn').addEventListener('click', function() {
+                currentMatch.homeAway = 'thuis';
+                this.className = 'button button-primary';
+                document.getElementById('away-btn').className = 'button button-outline';
+            });
+
+            document.getElementById('away-btn').addEventListener('click', function() {
+                currentMatch.homeAway = 'uit';
+                this.className = 'button button-primary';
+                document.getElementById('home-btn').className = 'button button-outline';
+            });
+
+            // Player select
+            document.getElementById('player-select').addEventListener('change', function() {
+                const newPlayerInput = document.getElementById('new-player-name');
+                if (this.value === 'new') {
+                    newPlayerInput.classList.remove('hidden');
+                    newPlayerInput.focus();
+                } else {
+                    newPlayerInput.classList.add('hidden');
+                    newPlayerInput.value = '';
+                }
+                updateAddPlayerButton();
+            });
+
+            document.getElementById('new-player-name').addEventListener('input', updateAddPlayerButton);
+            document.getElementById('new-player-name').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addPlayerFromSelect();
+                }
+            });
+
+            // Buttons
+            document.getElementById('add-player').addEventListener('click', addPlayerFromSelect);
+            document.getElementById('save-match').addEventListener('click', saveMatch);
+            document.getElementById('cancel-edit').addEventListener('click', resetForm);
+
+            // Modal buttons
+            document.getElementById('manage-players').addEventListener('click', function() {
+                updateSavedPlayersModal();
+                document.getElementById('player-modal').classList.remove('hidden');
+            });
+
+            document.getElementById('close-modal').addEventListener('click', function() {
+                document.getElementById('player-modal').classList.add('hidden');
+                editingPlayer = null;
+            });
+
+            // Confirm modal
+            document.getElementById('confirm-cancel').addEventListener('click', hideConfirmDialog);
+            document.getElementById('confirm-action').addEventListener('click', function() {
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+                hideConfirmDialog();
+            });
+
+            // Close modals on overlay click
+            document.getElementById('player-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                    editingPlayer = null;
+                }
+            });
+
+            document.getElementById('confirm-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideConfirmDialog();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
